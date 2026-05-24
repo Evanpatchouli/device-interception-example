@@ -1,9 +1,11 @@
 import EventEmitter from 'node:events';
 import state from './state.js';
+import logger from './logger.js';
 
 const emitter = new EventEmitter();
 
 const events = new Map();
+let destroyHandler = null;
 
 emitter.on('stop', () => {
   state.SET_LISTENING(false);
@@ -19,10 +21,19 @@ emitter.on('start', () => {
 emitter.on('destroy', () => {
   emitter.emit('stop');
   logger.info("Received destroy signal, destroy instance...");
-  interception?.destroy();
+  events.get('destroy')?.();
+  destroyHandler?.();
 });
 
-export function onDestroy() {
+export function setDestroyHandler(cb) {
+  destroyHandler = cb;
+}
+
+export function onDestroy(cb) {
+  if (typeof cb === 'function') {
+    events.set('destroy', cb);
+    return;
+  }
   emitter.emit('destroy');
 }
 

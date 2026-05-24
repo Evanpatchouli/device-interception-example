@@ -5,7 +5,10 @@
   "namespace": "device-interception",
   "env": {
     "NODE_ENV": "production",
-    "PORT": 30016
+    "HOST": "127.0.0.1",
+    "PORT": 30016,
+    "PROTOCOL": "http",
+    "ALLOWED_ORIGINS": ""
   },
   "version": "1.1.0",
   "watch": false,

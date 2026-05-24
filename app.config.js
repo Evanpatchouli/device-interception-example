@@ -5,6 +5,7 @@ const appConfig = {
     host: "127.0.0.1",
     port: 30016,
     protocol: "http",
+    allowedOrigins: [],
   },
   serverPath() {
     return `${this.server.protocol}://${this.server.host}:${this.server.port}`

@@ -5,10 +5,11 @@ import init from './utils/init.js';
 
 const listen = async (action) => {
   await init();
-  server.listen(cfg.port, () => {
+  const serverUrl = `${cfg.protocol}://${cfg.host}:${cfg.port}`;
+  server.listen(cfg.port, cfg.host, () => {
     console.log(chalk.yellow(`------------------ ${cfg.name} ------------------`));
-    console.log(`${chalk.green(cfg.name)} is listening at ${chalk.hex("#24a9cd")(`http://localhost:${cfg.port}`)}`);
-    console.log(chalk.green('Monitor') + ' is deployed at ' + chalk.hex("#24a9cd")(`http://localhost:${cfg.port}/monitor`));
+    console.log(`${chalk.green(cfg.name)} is listening at ${chalk.hex("#24a9cd")(serverUrl)}`);
+    console.log(chalk.green('Monitor') + ' is deployed at ' + chalk.hex("#24a9cd")(`${serverUrl}${cfg.monitorPath}`));
     action?.();
   })
 }

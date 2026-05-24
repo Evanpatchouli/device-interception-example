@@ -6,15 +6,27 @@ import request from '../api/request.js'
 import { Button, Dom, ToolTip } from 'evp-design-ui'
 import { socket } from '../socket/index.js'
 import toast from '../utils/toast.js'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Main() {
 
   const [status, statusSet] = useState(false);
-  socket.on('status', (status) => {
-    toast[status ? 'success' : 'info'](`拦截器状态: ${status ? '启用' : '休眠'}`);
-    statusSet(status);
-  });
+
+  useEffect(() => {
+    const onStatus = (nextStatus) => {
+      toast[nextStatus ? 'success' : 'info'](`拦截器状态: ${nextStatus ? '启用' : '休眠'}`);
+      statusSet(nextStatus);
+    };
+
+    socket.on('status', onStatus);
+    if (socket.connected) {
+      socket.emit('status');
+    }
+
+    return () => {
+      socket.off('status', onStatus);
+    };
+  }, []);
 
   return (
     <>
@@ -39,9 +51,9 @@ export default function Main() {
               light
               $click={() => {
                 request.GET("/api/status").then((res) => {
-                  const status = res.data;
-                  statusSet(status);
-                  toast.info(`拦截器状态: ${status ? "启用" : "休眠"}`);
+                  const nextStatus = res.data;
+                  statusSet(nextStatus);
+                  toast.info(`拦截器状态: ${nextStatus ? "启用" : "休眠"}`);
                 });
               }}
             />

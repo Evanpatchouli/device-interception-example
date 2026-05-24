@@ -1,1 +1,1 @@
-set NODE_ENV=production && node --no-warnings serve.js
+set NODE_ENV=production && node --env-file-if-exists=.env serve.js

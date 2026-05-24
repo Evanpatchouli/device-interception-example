@@ -4,11 +4,13 @@
   <a href="#"><img alt="github" src="https://img.shields.io/badge/Github-grey.svg"></a>
   <a href="#"><img alt="License" src="https://img.shields.io/badge/license-LGPL3-green.svg"></a>
   <a href="#"><img alt="platform" src="https://img.shields.io/badge/os-windows_11-blue.svg"></a>
-  <a href="#"><img alt="NodeJS" src="https://img.shields.io/badge/NodeJS-16+-green.svg"></a>
+  <a href="#"><img alt="NodeJS" src="https://img.shields.io/badge/NodeJS-26.2.0-green.svg"></a>
   <a href="#"><img alt="CS:GO" src="https://img.shields.io/badge/CS:GO-black.svg"></a>
 </p>
 
 一个 **windows** 上的 Node.js 示例程序，用于在 CS2 中轻松实现跳投。
+
+本项目面向 Node.js 26.2.0 运行。
 
 ## 免责申明
 
@@ -30,41 +32,50 @@ npm run install:driver
 
 在下面的示例代码中，应用了 CS2 中的一些投掷操作，`F7` 被设置为触发跳投动作。
 
-你可以在 `npm run start:node` 或 `npm run start:bun` 在 **node** 或 **bun** 环境下执行 `index.js`。
+使用 Node 入口运行脚本：`npm run start` 或 `npm run start:node` 执行 `index.js`。如果需要启动服务入口，使用 `npm run serve`、`npm run serve:node` 或 `node-serve.bat`。
 
 ```javascript
 function main() {
   logger.info("Press any key or move the mouse to generate strokes.");
   logger.info(`Press ${chalk.blueBright("ESC")} to exit and restore back control.`);
-  logger.info("【F7】跳投");
-  logger.info("【F8】右键跳投");
-  logger.info("【F9】前跳投");
-  logger.info("【F10】双键跳投");
-  logger.info("【F11】前双键跳投");
-  logger.info("【F12】Mirage VIP 慢烟");
+  macros.forEach((macro) => {
+    logger.info(`【${macro.trigger}】${macro.description}`);
+  });
 
+  const runMacros = createMacroHandler();
   core
-    .listen("keyboard", {
-      after: async (stroke, input, baseKey, device) => {
-        concurrentify(
-          jumpThrow(stroke, input, "F7"), // jump + attack1
-          jumpThrow2(stroke, input, "F8"), // jump + attack2
-          forwardJumpThrow(stroke, input, "F9"), // forward + jump + attack1
-          jumpDoubleThrow(stroke, input, "F10"), // jump + attack1 + attack2
-          forwardJumpDoubleThrow(stroke, input, "F11"), // forward + jump + attack1 + attack2
-          rightJumpThrow(stroke, input, "F12") // right + wait(200) + jump + attack1
-        );
+    .listen("all", {
+      after: async (stroke, input) => {
+        await runMacros(stroke, input);
       },
     })
     .catch((error) => logger.error(error));
 }
 ```
 
+## 运行配置
+
+服务端使用 Node.js 26.2.0 原生 dotenv 能力读取 `.env`。如需覆盖本机默认值，可以复制 `.env.example`：
+
+```env
+HOST=127.0.0.1
+PORT=30016
+PROTOCOL=http
+ALLOWED_ORIGINS=
+```
+
+`ALLOWED_ORIGINS` 使用逗号分隔。留空时只允许配置端口上的 `localhost`、`127.0.0.1` 和 `[::1]`。
+
 ## 使用 PM2 运行
 
 你可以使用 `pm2` 来在后台持续运行脚本。
 
-我在 pm2 目录中提供了两个 pm2 配置文件。在使用之前，你需要全局安装 `pm2`:
+`pm2` 目录中提供了两个 Node 专用 PM2 配置文件：
+
+- `pm2/start.json`: 运行 `index.js`
+- `pm2/serve.json`: 运行 `serve.js`
+
+在使用之前，你需要全局安装 `pm2`:
 
 ```shell
 npm install -g pm2
@@ -73,15 +84,17 @@ npm install -g pm2
 然后修改这些文件以适应你的环境。主要是更新以下参数:
 
 - `cwd`: 执行脚本的根目录
-- `interpreter`: 脚本的解释器，例如 `bun.exe` 的绝对路径
 - `out_file`: 输出文件的路径，可以是绝对路径或相对路径 (cwd)
 - `error_file`: 错误文件的路径，可以是绝对路径或相对路径 (cwd)
-- `env`: 如果你需要设置一些环境变量
+- `env`: 主机、端口、协议和允许来源
+
+PM2 会用 Node 运行这些配置。如果你的 PM2 环境没有使用 Node.js 26.2.0，请将运行环境或 PM2 解释器指向 Node 26.2.0 可执行文件。
 
 然后你可以像这样使用 pm2 运行脚本:
 
 ```shell
 # my project path is at D:\Work\device-interception-example
+pm2 start ./pm2/start.json
 pm2 start ./pm2/serve.json
 ```
 

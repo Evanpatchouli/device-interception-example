@@ -13234,3 +13234,33 @@ Monitor is deployed at http://localhost:30016/monitor
 [logger]: 【F12】Mirage VIP 慢烟
 [logger]: Stop Emergency is enabled
 [logger]: Resuming intercepting...
+Monitor path: /monitor/ Public path: D:\Work\device-interception-example\server\public
+[logger]: SocketIo server created!
+[logger]: Initializing the server...
+------------------ device-interception ------------------
+device-interception is listening at http://localhost:30016
+Monitor is deployed at http://localhost:30016/monitor
+[logger]: Press any key or move the mouse to generate strokes.
+[logger]: Press ESC to exit and restore back control.
+[logger]: 【F7】跳投
+[logger]: 【F8】右键跳投
+[logger]: 【F9】前跳投
+[logger]: 【F10】双键跳投
+[logger]: 【F11】前双键跳投
+[logger]: 【F12】Mirage VIP 慢烟
+[logger]: Resuming intercepting...
+Monitor path: /monitor/ Public path: D:\Work\device-interception-example\server\public
+[logger]: SocketIo server created!
+[logger]: Initializing the server...
+------------------ device-interception ------------------
+device-interception is listening at http://localhost:30016
+Monitor is deployed at http://localhost:30016/monitor
+[logger]: Press any key or move the mouse to generate strokes.
+[logger]: Press ESC to exit and restore back control.
+[logger]: 【F7】跳投
+[logger]: 【F8】右键跳投
+[logger]: 【F9】前跳投
+[logger]: 【F10】双键跳投
+[logger]: 【F11】前双键跳投
+[logger]: 【F12】Mirage VIP 慢烟
+[logger]: Resuming intercepting...

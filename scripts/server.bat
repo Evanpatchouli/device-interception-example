@@ -1,2 +1,2 @@
 cd ..
-set NODE_ENV=production && bun serve.js
+set NODE_ENV=production && node --env-file-if-exists=.env serve.js

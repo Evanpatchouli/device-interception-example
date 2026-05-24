@@ -4,11 +4,13 @@
   <a href="#"><img alt="github" src="https://img.shields.io/badge/Github-grey.svg"></a>
   <a href="#"><img alt="License" src="https://img.shields.io/badge/license-LGPL3-green.svg"></a>
   <a href="#"><img alt="platform" src="https://img.shields.io/badge/os-windows_11-blue.svg"></a>
-  <a href="#"><img alt="NodeJS" src="https://img.shields.io/badge/NodeJS-16+-green.svg"></a>
+  <a href="#"><img alt="NodeJS" src="https://img.shields.io/badge/NodeJS-26.2.0-green.svg"></a>
   <a href="#"><img alt="CS:GO" src="https://img.shields.io/badge/CS:GO-black.svg"></a>
 </p>
 
 An example Node.js application to easily jump-throw on **windows** in CS2.
+
+This project targets Node.js 26.2.0.
 
 ## Disclaimer
 
@@ -30,59 +32,69 @@ You'll need to **restart** for the driver installation to be complete.
 
 In example codes below, some throw-actions in _Counter-Strike 2_ are applied, `F7` is set to trigger the jump-throw action.
 
-You can execuate `npm run start:node` or `npm run start:bun` to run `index.js` with **node** or **bun**.
+Run the Node script with `npm run start` or `npm run start:node` to execute `index.js`. If you need to start the server entry, use `npm run serve`, `npm run serve:node`, or `node-serve.bat`.
 
 ```javascript
 function main() {
   logger.info("Press any key or move the mouse to generate strokes.");
   logger.info(`Press ${chalk.blueBright("ESC")} to exit and restore back control.`);
-  logger.info("【F7】跳投");
-  logger.info("【F8】右键跳投");
-  logger.info("【F9】前跳投");
-  logger.info("【F10】双键跳投");
-  logger.info("【F11】前双键跳投");
-  logger.info("【F12】Mirage VIP 慢烟");
+  macros.forEach((macro) => {
+    logger.info(`【${macro.trigger}】${macro.description}`);
+  });
 
+  const runMacros = createMacroHandler();
   core
-    .listen("keyboard", {
-      after: async (stroke, input, baseKey, device) => {
-        concurrentify(
-          // Add your side-effect handler below  往下添加附作用事件
-          jumpThrow(stroke, input, "F7"), // jump + attack1
-          jumpThrow2(stroke, input, "F8"), // jump + attack2
-          forwardJumpThrow(stroke, input, "F9"), // forward + jump + attack1
-          jumpDoubleThrow(stroke, input, "F10"), // jump + attack1 + attack2
-          forwardJumpDoubleThrow(stroke, input, "F11"), // forward + jump + attack1 + attack2
-          rightJumpThrow(stroke, input, "F12") // right + wait(200) + jump + attack1
-        );
+    .listen("all", {
+      after: async (stroke, input) => {
+        await runMacros(stroke, input);
       },
     })
     .catch((error) => logger.error(error));
 }
 ```
 
+## Runtime configuration
+
+The server reads `.env` with Node.js 26.2.0 native dotenv support. Copy `.env.example` if you need to override local defaults:
+
+```env
+HOST=127.0.0.1
+PORT=30016
+PROTOCOL=http
+ALLOWED_ORIGINS=
+```
+
+`ALLOWED_ORIGINS` is a comma-separated list. Leave it empty to allow only `localhost`, `127.0.0.1`, and `[::1]` on the configured port.
+
 ## Run with PM2
 
 You can use `pm2` to keep running the script in the background.
 
-I have provided a two pm2 configuration files at the pm2 directory. Before using it, you need to install `pm2` globally:
+The `pm2` directory contains two Node-only PM2 configuration files:
+
+- `pm2/start.json`: runs `index.js`
+- `pm2/serve.json`: runs `serve.js`
+
+Before using them, you need to install `pm2` globally:
 
 ```shell
 npm install -g pm2
 ```
 
-And modify these files to fit your environment. Mainly, you need to update thehe premeters:
+Then modify these files to fit your environment. Mainly, you need to update these parameters:
 
 - `cwd`: the root directory to execute the script
-- `interpreter`: the interpreter of the script, such as the absolute path of `bun.exe`
 - `out_file`: the path of the output file, could be absolute or relative (cwd)
 - `error_file`: the path of the error file, could be absolute or relative (cwd)
-- `env`: if you need to set some environment variables
+- `env`: host, port, protocol, and allowed origins
+
+PM2 runs these configurations with Node. If your PM2 environment does not use Node.js 26.2.0, point your environment or PM2 interpreter to the Node 26.2.0 executable.
 
 Then you can run the script with pm2 just like:
 
 ```shell
 # my project path is at D:\Work\device-interception-example
+pm2 start ./pm2/start.json
 pm2 start ./pm2/serve.json
 ```
 

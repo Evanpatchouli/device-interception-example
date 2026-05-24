@@ -5,6 +5,24 @@ import appConfig from "../../../app.config";
 
 const DEFAULT_TIMEOUT = 5000; // 默认超时时间为 5 秒
 
+const isMonitorRuntime = () => {
+  const pathname = globalThis.location?.pathname;
+  const monitorPath = appConfig.monitor.path.replace(/\/+$/, '');
+  return pathname === monitorPath || pathname?.startsWith(`${monitorPath}/`);
+};
+
+const getApiUrl = (url) => {
+  if (!(url || "").startsWith("/api")) {
+    return url;
+  }
+
+  if (isMonitorRuntime()) {
+    return url;
+  }
+
+  return appConfig.apiPath().concat(url.replace(/\/api/, ''));
+};
+
 /**
  * 处理 fetch 请求的响应
  * @param {Response} response - fetch 请求的响应对象
@@ -48,9 +66,7 @@ const fetchWithTimeout = (url, options, timeout = DEFAULT_TIMEOUT) => {
   const controller = new AbortController();
   const { signal } = controller;
 
-  if ((url || "").startsWith("/api")) {
-    url = appConfig.apiPath().concat(url.replace(/\/api/, ''));
-  }
+  url = getApiUrl(url);
 
   let timeoutId;
 

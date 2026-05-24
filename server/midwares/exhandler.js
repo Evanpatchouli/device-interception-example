@@ -22,29 +22,39 @@ exhandleStrategy.set(500, (res, ...args) => {
 })
 
 export function excatcher(err, req, res, next) {
-  if (err) {
-    try {
-      const payload = JSON.parse(err.message);
-      const { code, msg, symbol, data, back, status } = payload;
-      if (back != false) {
-        const handler = exhandleStrategy.get(code);
-        if (handler) { handler(res, msg, symbol, data, status); }
-        else { res.json(Resp.bad("System Exception")); }
-      } else {
-        res.json(Resp.bad("System Exception"));
+  if (!err) {
+    return next();
+  }
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  try {
+    const payload = JSON.parse(err.message);
+    const { code, msg, symbol, data, back, status } = payload;
+    if (back !== false) {
+      const handler = exhandleStrategy.get(code);
+      if (handler) {
+        return handler(res, msg, symbol, data, status);
       }
-    } catch (_) { // cannot be parsed to JSON object => common error
-      res.json(Resp.bad("System Exception"));
+      return res.json(Resp.bad("System Exception"));
     }
-    next(err);
-  } else {
-    next();
+    return res.json(Resp.bad("System Exception"));
+  } catch (_) { // cannot be parsed to JSON object => common error
+    return res.json(Resp.bad("System Exception"));
   }
 }
 export function exlogger(err, req, res, next) {
+  if (!err) {
+    return next();
+  }
+
   if (logger.levelIndex() <= 4) {
     logger.error(err);
-    return;
+  } else {
+    logger.error(err.message ?? err);
   }
-  logger.error(err.message);
+
+  return next(err);
 }
